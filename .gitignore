@@ -1,2 +1,7 @@
 *.ipynb*
 *.csv
+*.pdf*
+*.aux
+*.fdb_latexmk
+*.fls
+*.log

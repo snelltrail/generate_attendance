@@ -1,0 +1,44 @@
+\documentclass[14pt, a4paper]{article}
+\usepackage{tabularx, extsizes}
+\usepackage[margin=1in]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{longtable, tabu}
+
+\newcommand{\mathpaper}{Maths 108 Tutorial Attendance}
+\newcommand{\tutorialnumber}{1}
+\newcommand{\tutorialgroup}{1}
+\newcommand{\tutorialtimeplace}{A time and place}
+\newcommand{\tutorname}{A human}
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\renewcommand{\familydefault}{\sfdefault}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\mathpaper}\\
+\vspace{10pt}
+{Tutorial group: \tutorialgroup}\\
+\vspace{10pt}
+{\tutorialtimeplace}\\
+\end{center}
+
+\begin{longtabu} to \textwidth {X Y}
+  Tutor: \tutorname & Tutorial number: \tutorialnumber
+\end{longtabu}
+
+\begin{center}
+\rowcolors{2}{gray!25}{white}
+\tabulinesep=2.0mm
+\begin{longtabu} to \textwidth { | c | Y | Y | c | c | } \hline
+  \rowcolor{gray!50}
+  & First name & Last name & ID Number & UPI\\ \hline
+1 & Jane & Smith  & 111  & jsmi001 \\ \hline
+2 & Bob  & Smith  & 112  & bsmi001 \\ \hline
+\end{longtabu}
+\end{center}
+
+\end{document}
+
