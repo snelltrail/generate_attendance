@@ -1,4 +1,6 @@
-#TODO break everything out into separate functions
+# TODO break everything out into separate functions
+# TODO use protobuffs to improve serialization/communication?, essentially allow
+# config in a json-like format
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -10,17 +12,21 @@ import pandas as pd
 import os
 import subprocess
 import collections
+import textwrap
 
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("input", None, "CSV file from Canvas.")
 flags.DEFINE_string("output", "output.csv", "Suffix for output files.")
 flags.DEFINE_string("number", None, "Tutorial number")
-#TODO Input parsing, check e.g. a valid number is given
+flags.DEFINE_string(
+    "metadata", "tutorial_metadata.tsv", "File containing tutorial metadata"
+)
+# TODO Input parsing, check e.g. a valid number is given
 
 
 def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
-    #TODO Unindent tex boilerplate
+    # TODO Unindent tex boilerplate
     tex_boilerplate = r"""
         \documentclass[14pt, a4paper]{{article}}
         \usepackage{{tabularx, extsizes}}
@@ -64,6 +70,7 @@ def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
         \end{{center}}
 
         \end{{document}}"""
+    tex_boilerplate = textwrap.dedent(tex_boilerplate)
     list_of_tut_students = list(data.loc[i] for i in data.index.values)
     rows = []
     for i in range(len(list_of_tut_students)):
@@ -103,16 +110,16 @@ def main(argv):
     # makes sure all the metadata for a given tutorial is bundled together
     tutorials = {i: df[df["Tutorial"] == i] for i in tutorials_nums}
 
-    #TODO two dictionaries needed here?
+    # TODO two dictionaries needed here?
 
     # Now need to generate the .tex files
 
     full_tut = collections.namedtuple("full_tut", ["details", "tutor"])
     complete_tuts = {}
 
-    #TODO get rid of .tsv, use separate columns and csv instead; still read in
-    #without pandas
-    with open("tutorial_metadata.tsv") as f:
+    # TODO get rid of .tsv, use separate columns and csv instead; still read in
+    # without pandas
+    with open(FLAGS.metadata) as f:
         next(f)
         for row in f:
             group, details, tutor = row.strip().split("\t")
@@ -143,8 +150,8 @@ def main(argv):
             subprocess.run(
                 ["latexmk", "-c", output_file], stdout=devnull, stderr=devnull
             )
-            #TODO Clean up .tex files
-            #TODO Output to a separate directory
+            # TODO Clean up .tex files
+            # TODO Output to a separate directory
 
 
 if __name__ == "__main__":
