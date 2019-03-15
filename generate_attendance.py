@@ -14,6 +14,8 @@ import subprocess
 import collections
 import textwrap
 
+from tqdm import tqdm
+
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("input", None, "CSV file from Canvas.")
@@ -125,7 +127,7 @@ def main(argv):
             group, details, tutor = row.strip().split("\t")
             complete_tuts[int(group)] = full_tut(details=details, tutor=tutor)
 
-    for i, tut in tutorials.items():
+    for i, tut in tqdm(tutorials.items()):
         output_string = generate_tex(
             "Math 108 Tutorial Attendance",
             FLAGS.number,
