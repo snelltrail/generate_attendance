@@ -24,69 +24,83 @@ flags.DEFINE_string(
 )
 # TODO Input parsing, check e.g. a valid number is given
 
+TEX_BOILERPLATE = textwrap.dedent(
+    r"""
+    \documentclass[14pt, a4paper]{{article}}
+    \usepackage{{tabularx, extsizes}}
+    \usepackage[margin=1in]{{geometry}}
+    \usepackage[table]{{xcolor}}
+    \usepackage{{longtable, tabu}}
+
+    \newcommand{{\mathpaper}}{{{}}}
+    \newcommand{{\tutorialnumber}}{{{}}}
+    \newcommand{{\tutorialgroup}}{{{}}}
+    \newcommand{{\tutorialtimeplace}}{{{}}}
+    \newcommand{{\tutorname}}{{{}}}
+
+    \newcolumntype{{Y}}{{>{{\centering\arraybackslash}}X}}
+    \renewcommand{{\familydefault}}{{\sfdefault}}
+
+    \pagestyle{{empty}}
+
+    \begin{{document}}
+
+    \begin{{center}}
+    {{\mathpaper}}\\
+    \vspace{{10pt}}
+    {{Tutorial group: \tutorialgroup}}\\
+    \vspace{{10pt}}
+    {{\tutorialtimeplace}}\\
+    \end{{center}}
+
+    \begin{{longtabu}} to \textwidth {{X Y}}
+      Tutor: \tutorname & Tutorial number: \tutorialnumber
+    \end{{longtabu}}
+
+    \begin{{center}}
+    \rowcolors{{2}}{{gray!25}}{{white}}
+    \tabulinesep=2.0mm
+    \begin{{longtabu}} to \textwidth {{ | c | Y | Y | c | c | }} \hline
+      \rowcolor{{gray!50}}
+      & First name & Last name & ID Number & UPI\\ \hline
+    {}
+    \end{{longtabu}}
+    \end{{center}}
+
+    \end{{document}}"""
+)
+
 
 def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
-    # TODO Unindent tex boilerplate
-    tex_boilerplate = r"""
-        \documentclass[14pt, a4paper]{{article}}
-        \usepackage{{tabularx, extsizes}}
-        \usepackage[margin=1in]{{geometry}}
-        \usepackage[table]{{xcolor}}
-        \usepackage{{longtable, tabu}}
+    """Returns contents of an attendance sheet as a tex file.
 
-        \newcommand{{\mathpaper}}{{{}}}
-        \newcommand{{\tutorialnumber}}{{{}}}
-        \newcommand{{\tutorialgroup}}{{{}}}
-        \newcommand{{\tutorialtimeplace}}{{{}}}
-        \newcommand{{\tutorname}}{{{}}}
+    Args:
+        paper: String describing the paper, e.g. "Maths 108".
+        tutorial_number: The tutorial number for that week, e.g. 1. 
+        tutorial_group: The id for the tutorial, e.g. 1.
+        time: The time of the tutorial, e.g. "3pm".
+        tutor: The name of the tutor, e.g. "Daniel".
+        data: A dataframe with columns "First Name", "Last Name", "ID Number",
+            "UPI", "Tutorial".
 
-        \newcolumntype{{Y}}{{>{{\centering\arraybackslash}}X}}
-        \renewcommand{{\familydefault}}{{\sfdefault}}
-
-        \pagestyle{{empty}}
-
-        \begin{{document}}
-
-        \begin{{center}}
-        {{\mathpaper}}\\
-        \vspace{{10pt}}
-        {{Tutorial group: \tutorialgroup}}\\
-        \vspace{{10pt}}
-        {{\tutorialtimeplace}}\\
-        \end{{center}}
-
-        \begin{{longtabu}} to \textwidth {{X Y}}
-          Tutor: \tutorname & Tutorial number: \tutorialnumber
-        \end{{longtabu}}
-
-        \begin{{center}}
-        \rowcolors{{2}}{{gray!25}}{{white}}
-        \tabulinesep=2.0mm
-        \begin{{longtabu}} to \textwidth {{ | c | Y | Y | c | c | }} \hline
-          \rowcolor{{gray!50}}
-          & First name & Last name & ID Number & UPI\\ \hline
-        {}
-        \end{{longtabu}}
-        \end{{center}}
-
-        \end{{document}}"""
-    tex_boilerplate = textwrap.dedent(tex_boilerplate)
-    list_of_tut_students = list(data.loc[i] for i in data.index.values)
-    rows = []
-    for i in range(len(list_of_tut_students)):
-        rows.append(
-            str(i + 1)
-            + " & "
-            + " & ".join(str(x) for x in list(list_of_tut_students[i][:-1]))
-            + "\\\ \hline"
+    Returns:
+        The tex file as a string.
+    """
+    # Add a row for each student.
+    table_rows = [
+        "{row_num} & & & {id_num} & {upi} \\\ \hline".format(
+            row_num=i + 1, id_num=student_info["ID Number"], upi=student_info["UPI"]
         )
-    for i in range(len(list_of_tut_students) + 1, 51):
-        rows.append(str(i) + " & " + " & " + " & " + " & " + "\\\ \hline")
-    write_text = "\n".join(rows)
-    tex_boilerplate = tex_boilerplate.format(
-        paper, tutorial_number, tutorial_group, time, tutor, write_text
+        for i, student_info in data.iterrows()
+    ]
+    # Add blank rows at bottom of the sheet.
+    table_rows.extend(
+        ["{} &  &  &  & \\\ \hline".format(i) for i in range(len(data.index) + 1, 51)]
     )
-    return tex_boilerplate
+    table = "\n".join(table_rows)
+    return TEX_BOILERPLATE.format(
+        paper, tutorial_number, tutorial_group, time, tutor, table
+    )
 
 
 def main(argv):
