@@ -28,7 +28,6 @@ flags.DEFINE_string(
 
 
 def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
-    # TODO Unindent tex boilerplate
     tex_boilerplate = r"""
         \documentclass[14pt, a4paper]{{article}}
         \usepackage{{tabularx, extsizes}}
@@ -92,6 +91,7 @@ def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
 
 
 def main(argv):
+    os.mkdir(FLAGS.output)
     df = pd.read_csv(FLAGS.input).filter(
         items=["Student", "SIS User ID", "SIS Login ID", "Section"]
     )
@@ -142,18 +142,17 @@ def main(argv):
             if FLAGS.output[-4:] == ".tex"
             else FLAGS.output + "tut" + str(i) + ".tex"
         )
-        with open(output_file, "w") as f:
+        with open(FLAGS.output + "/" + output_file, "w") as f:
             f.write(output_string)
 
         with open(os.devnull, "w") as devnull:
             subprocess.run(
-                ["latexmk", "-pdf", output_file], stdout=devnull, stderr=devnull
+                ["latexmk", "-pdf", "-cd", FLAGS.output + "/" + output_file], stdout=devnull, stderr=devnull
             )
             subprocess.run(
-                ["latexmk", "-c", output_file], stdout=devnull, stderr=devnull
+                ["latexmk", "-c", "-cd", FLAGS.output + "/" + output_file], stdout=devnull, stderr=devnull
             )
-            # TODO Clean up .tex files
-            # TODO Output to a separate directory
+            os.remove(FLAGS.output + "/" + output_file)
 
 
 if __name__ == "__main__":
