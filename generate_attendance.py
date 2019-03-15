@@ -87,12 +87,14 @@ def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
         The tex file as a string.
     """
     # Add a row for each student.
-    table_rows = [
-        "{row_num} & & & {id_num} & {upi} \\\ \hline".format(
-            row_num=i + 1, id_num=student_info["ID Number"], upi=student_info["UPI"]
+    table_rows = []
+    for i, row in enumerate(data.itertuples()):
+        _, student_info = row
+        table_rows.append(
+            "{row_num} & & & {id_num} & {upi} \\\ \hline".format(
+                row_num=i + 1, id_num=student_info["ID Number"], upi=student_info["UPI"]
+            )
         )
-        for i, student_info in data.iterrows()
-    ]
     # Add blank rows at bottom of the sheet.
     table_rows.extend(
         ["{} &  &  &  & \\\ \hline".format(i) for i in range(len(data.index) + 1, 51)]
