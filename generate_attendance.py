@@ -164,10 +164,14 @@ def main(argv):
 
         with open(os.devnull, "w") as devnull:
             subprocess.run(
-                ["latexmk", "-pdf", "-cd", FLAGS.output + "/" + output_file], stdout=devnull, stderr=devnull
+                ["latexmk", "-pdf", "-cd", FLAGS.output + "/" + output_file],
+                stdout=devnull,
+                stderr=devnull,
             )
             subprocess.run(
-                ["latexmk", "-c", "-cd", FLAGS.output + "/" + output_file], stdout=devnull, stderr=devnull
+                ["latexmk", "-c", "-cd", FLAGS.output + "/" + output_file],
+                stdout=devnull,
+                stderr=devnull,
             )
             os.remove(FLAGS.output + "/" + output_file)
 
