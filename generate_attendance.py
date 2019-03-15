@@ -90,7 +90,7 @@ def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
     """
     # Add a row for each student.
     table_rows = []
-    for i, row in enumerate(data.itertuples()):
+    for i, row in enumerate(data.iterrows()):
         _, student_info = row
         table_rows.append(
             "{row_num} & & & {id_num} & {upi} \\\ \hline".format(
