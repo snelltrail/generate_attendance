@@ -72,6 +72,8 @@ TEX_BOILERPLATE = textwrap.dedent(
     \end{{document}}"""
 )
 
+TutorialInfo = collections.namedtuple("TutorialInfo", ["details", "tutor", "students"])
+
 
 def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
     """Returns contents of an attendance sheet as a tex file.
@@ -107,10 +109,11 @@ def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
     )
 
 
-def main(argv):
+def read_csv():
+    """Returns a dataframe."""
     os.mkdir(FLAGS.output)
-    df = pd.read_csv(FLAGS.input).filter(
-        items=["Student", "SIS User ID", "SIS Login ID", "Section"]
+    df = pd.read_csv(
+        FLAGS.input, use_cols=["Student", "SIS User ID", "SIS Login ID", "Section"]
     )
     initial_length = len(df)
     # More readable column titles
@@ -123,35 +126,33 @@ def main(argv):
     df["Tutorial"] = df["Tutorial"].astype(int)
     df["First Name"] = ""
     df["Last Name"] = ""
-    df = df.filter(items=["First Name", "Last Name", "ID Number", "UPI", "Tutorial"])
-    tutorials_nums = sorted(pd.unique(df["Tutorial"]))
-    # Should construct a dictionary of tut_group: named tuple where the tuple
-    # makes sure all the metadata for a given tutorial is bundled together
-    tutorials = {i: df[df["Tutorial"] == i] for i in tutorials_nums}
+    return df.filter(items=["First Name", "Last Name", "ID Number", "UPI", "Tutorial"])
 
-    # TODO two dictionaries needed here?
 
-    # Now need to generate the .tex files
+def main(argv):
+    df = read_csv()
 
-    full_tut = collections.namedtuple("full_tut", ["details", "tutor"])
-    complete_tuts = {}
-
-    # TODO get rid of .tsv, use separate columns and csv instead; still read in
-    # without pandas
+    # Read in metadata.
+    tutorials = {}
     with open(FLAGS.metadata) as f:
         next(f)
         for row in f:
+            # TODO: Get rid of .tsv, use separate columns and csv instead.
             group, details, tutor = row.strip().split("\t")
-            complete_tuts[int(group)] = full_tut(details=details, tutor=tutor)
+            group_num = int(group)
+            tutorials[group_num] = TutorialInfo(
+                details=details, tutor=tutor, students=df[df["Tutorial"] == group_num]
+            )
 
+    # Write files.
     for i, tut in tqdm(tutorials.items()):
         output_string = generate_tex(
             "Math 108 Tutorial Attendance",
             FLAGS.number,
-            str(i),
-            complete_tuts[i].details,
-            complete_tuts[i].tutor,
-            tut,
+            i,
+            tut.details,
+            tut.tutor,
+            tut.students,
         )
 
         output_file = (
@@ -159,20 +160,25 @@ def main(argv):
             if FLAGS.output[-4:] == ".tex"
             else FLAGS.output + "tut" + str(i) + ".tex"
         )
+
+        # Write to tex file.
         with open(FLAGS.output + "/" + output_file, "w") as f:
             f.write(output_string)
 
+        # Typset tex file to pdf.
         with open(os.devnull, "w") as devnull:
             subprocess.run(
                 ["latexmk", "-pdf", "-cd", FLAGS.output + "/" + output_file],
                 stdout=devnull,
                 stderr=devnull,
             )
+            # Remove auxiliary files.
             subprocess.run(
                 ["latexmk", "-c", "-cd", FLAGS.output + "/" + output_file],
                 stdout=devnull,
                 stderr=devnull,
             )
+            # Remove tex file.
             os.remove(FLAGS.output + "/" + output_file)
 
 
