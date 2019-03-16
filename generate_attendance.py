@@ -86,7 +86,7 @@ def generate_tex(paper, tutorial_number, tutorial_group, time, tutor, data):
             "UPI", "Tutorial".
 
     Returns:
-        The tex file as a string.
+        The tex file contents as a string.
     """
     # Add a row for each student.
     table_rows = []
