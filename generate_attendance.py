@@ -113,7 +113,7 @@ def read_csv():
     """Returns a dataframe."""
     os.mkdir(FLAGS.output)
     df = pd.read_csv(
-        FLAGS.input, use_cols=["Student", "SIS User ID", "SIS Login ID", "Section"]
+        FLAGS.input, usecols=["Student", "SIS User ID", "SIS Login ID", "Section"]
     )
     initial_length = len(df)
     # More readable column titles
