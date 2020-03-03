@@ -24,6 +24,7 @@ flags.DEFINE_string("number", None, "Tutorial number")
 flags.DEFINE_string(
     "metadata", "tutorial_metadata.tsv", "File containing tutorial metadata"
 )
+flags.DEFINE_string("course", "108", "Course code")
 # TODO Input parsing, check e.g. a valid number is given
 
 TEX_BOILERPLATE = textwrap.dedent(
@@ -147,7 +148,7 @@ def main(argv):
     # Write files.
     for i, tut in tqdm(tutorials.items()):
         output_string = generate_tex(
-            "Math 108 Tutorial Attendance",
+            "Math {} Tutorial Attendance".format(FLAGS.course),
             FLAGS.number,
             i,
             tut.details,
